@@ -1,17 +1,14 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
+const withPWA = require("next-pwa")({
+  dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === "development", // pas de SW en dev
 });
 
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
-  experimental: {
-    appDir: true, // ← indispensable pour les dossiers "app/"
-  },
+  output: "standalone",
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = withPWA(nextConfig); // ✅ C'est cette ligne qui doit être exportée
