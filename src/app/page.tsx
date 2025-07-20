@@ -14,8 +14,8 @@ import {
 
 const armies = [
   "Blades of Khorne", "Cities of Sigmar", "Daughters of Khaine", "Disciples of Tzeentch",
-  "Flesh-eater Courts", "Fyreslayers", "Gloomspite Gitz", "Hedonites of Slaanesh", "Idoneth Deepkin",
-  "Kharadron Overlords", "Lumineth Realm-lords", "Maggotkin of Nurgle", "Nighthaunt",
+  "Flesh-eater Courts", "Fyreslayers", "Gloomspite Gitz", "Hedonites of Slaanesh", "Helsmiths of Hashut", 
+  "Idoneth Deepkin", "Kharadron Overlords", "Lumineth Realm-lords", "Maggotkin of Nurgle", "Nighthaunt",
   "Orruk Warclans", "Seraphon", "Skaven", "Slaves to Darkness", "Sons of Behemat",
   "Stormcast Eternals", "Sylvaneth"
 ];
@@ -29,6 +29,7 @@ const armyImages: Record<string, string> = {
   "Fyreslayers": "/images/fyreslayers.jpg",
   "Gloomspite Gitz": "/images/gloomspite.jpg",
   "Hedonites of Slaanesh": "/images/slaanesh.jpg",
+  "Helsmiths of Hashut": "/images/Helsmiths.jpg",
   "Idoneth Deepkin": "/images/idoneth.jpg",
   "Kharadron Overlords": "/images/kharadron.jpg",
   "Lumineth Realm-lords": "/images/lumineth.jpg",
@@ -44,6 +45,7 @@ const armyImages: Record<string, string> = {
 };
 
 export default function AoSScoreTracker() {
+  const [view, setView] = useState<"home" | "game" | "stats">("home");
   const [players, setPlayers] = useState(() => [
     { name: "", army: "", scores: Array(10).fill(0) },
     { name: "", army: "", scores: Array(10).fill(0) },
@@ -66,13 +68,127 @@ export default function AoSScoreTracker() {
   const totalSecondary = (scores: number[]) => scores.slice(5).reduce((a, b) => a + b, 0);
   const isGameOver = currentTurn === 5;
 
+  if (view === "home") {
+    return (
+      <main className="min-h-screen flex flex-col justify-center items-center bg-[url('/images/background.jpg')] bg-cover bg-center text-white p-4">
+        <h1 className="text-4xl font-bold mt-8 mb-12 text-white drop-shadow-lg text-center">AOS SCORE TRACKER</h1>
+        <div className="flex flex-col items-center gap-4">
+          <Button
+            className="bg-black text-white text-xl font-semibold uppercase w-[230px]"
+            onClick={() => setView("game")}
+          >
+            NOUVELLE PARTIE
+          </Button>
+          <Button
+            className="bg-black text-white text-xl font-semibold uppercase w-[230px]"
+            onClick={() => setView("stats")}
+          >
+            STATISTIQUES
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  if (view === "stats") {
+    return (
+      <main className="min-h-screen flex flex-col justify-center items-center bg-gray-900 text-white p-4">
+        <h1 className="text-3xl font-bold mb-6">Statistiques</h1>
+        <p className="mb-6 text-lg text-center">Cette fonctionnalité sera disponible prochainement.</p>
+        <Button onClick={() => setView("home")} className="bg-white text-black hover:bg-gray-200">Retour à l'accueil</Button>
+      </main>
+    );
+  }
+
   return (
     <main className="p-2 sm:p-4 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+      {isGameOver && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center text-white overflow-auto" style={{ backgroundImage: "url('/images/summary.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+          <div className="bg-black/60 p-6 rounded-xl max-w-2xl w-full text-center">
+            <h3 className="text-2xl font-bold mb-4">RÉSUMÉ FIN DE PARTIE</h3>
+            <div className="space-y-4 text-lg">
+              {players.map((player, idx) => {
+                const totalPrimaires = player.scores.slice(0, 5).reduce((a, b) => a + b, 0);
+                const totalSecondaires = player.scores.slice(5).reduce((a, b) => a + b, 0);
+                const total = totalPrimaires + totalSecondaires;
+                const background = armyImages[player.army] || "";
+
+                return (
+                  <div
+                    key={idx}
+                    className="relative rounded-xl overflow-hidden p-4 bg-black/60 backdrop-blur-sm"
+                    style={{ backgroundImage: `url(${background})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                  >
+                    <div className="bg-black/60 p-4 rounded-lg">
+                      <div className="font-semibold text-xl mb-1">
+                        {(player.name || `Joueur ${idx + 1}`).toUpperCase()} ({player.army || "Armée inconnue"})
+                      </div>
+                      <div className="flex justify-between">
+                        <span>🔹 Primaires : {totalPrimaires}</span>
+                        <span>🔸 Secondaires : {totalSecondaires}</span>
+                        <span className="font-bold"> Total : {total}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 font-bold text-xl">
+              {(() => {
+                const [p1, p2] = players;
+                const t1 = totalScore(p1.scores);
+                const t2 = totalScore(p2.scores);
+                const s1 = totalSecondary(p1.scores);
+                const s2 = totalSecondary(p2.scores);
+
+                if (t1 === t2) {
+                  if (s1 === s2) return "ÉGALITÉ";
+                  const winner = s1 > s2 ? (p1.name || "Joueur 1") : (p2.name || "Joueur 2");
+                  return `VICTOIRE MINEURE DE ${winner.toUpperCase()}`;
+                }
+
+                const diff = Math.abs(t1 - t2);
+                const winner = t1 > t2 ? (p1.name || "Joueur 1") : (p2.name || "Joueur 2");
+
+                if (diff >= 5) return `VICTOIRE MAJEURE DE ${winner.toUpperCase()}`;
+                return `VICTOIRE MINEURE DE ${winner.toUpperCase()}`;
+              })()}
+            </div>
+
+            <div className="mt-6 flex flex-col items-center gap-4">
+  <Button
+    className="bg-black text-white text-xl font-semibold uppercase w-[230px]"
+    onClick={() => {
+      setPlayers([
+        { name: "", army: "", scores: Array(10).fill(0) },
+        { name: "", army: "", scores: Array(10).fill(0) },
+      ]);
+      setCurrentTurn(1);
+      localStorage.removeItem("aos-players");
+    }}
+  >
+    NOUVELLE PARTIE
+  </Button>
+
+  <Button
+    className="bg-black text-white text-xl font-semibold uppercase w-[230px]"
+    onClick={() => setView("home")}
+  >
+    MENU
+  </Button>
+</div>
+          </div>
+        </div>
+      )}
+
       {players.map((player, pIdx) => {
         const [p1, p2] = players;
         const t1 = totalScore(p1.scores);
         const t2 = totalScore(p2.scores);
-        const outsiderIndex = t1 === t2 ? -1 : t1 > t2 ? 1 : 0;
+        const previousT1 = totalScore(p1.scores.slice(0, currentTurn - 1)) + totalScore(p1.scores.slice(5, 5 + currentTurn - 1));
+        const previousT2 = totalScore(p2.scores.slice(0, currentTurn - 1)) + totalScore(p2.scores.slice(5, 5 + currentTurn - 1));
+        const outsiderIndex = currentTurn > 1 ? (previousT1 === previousT2 ? -1 : previousT1 > previousT2 ? 1 : 0) : -1;
 
         return (
           <Card key={pIdx} className="rounded-2xl shadow-md relative overflow-hidden">
@@ -139,8 +255,7 @@ export default function AoSScoreTracker() {
                             <Button
                               size="sm"
                               onClick={() => {
-                                const isPrimary = index < 5;
-                                const expectedIndex = currentTurn - 1 + (isPrimary ? 0 : 5);
+                                const expectedIndex = currentTurn - 1 + (j === 0 ? 0 : 5);
                                 if (index !== expectedIndex) return;
                                 setPlayers((prev) => {
                                   const updated = structuredClone(prev);
@@ -161,10 +276,9 @@ export default function AoSScoreTracker() {
                             <Button
                               size="sm"
                               onClick={() => {
-                                const isPrimary = index < 5;
-                                const expectedIndex = currentTurn - 1 + (isPrimary ? 0 : 5);
+                                const expectedIndex = currentTurn - 1 + (j === 0 ? 0 : 5);
                                 if (index !== expectedIndex) return;
-                                if (!isPrimary && totalSecondary(players[pIdx].scores) >= 30) return;
+                                if (j === 1 && totalSecondary(players[pIdx].scores) >= 30) return;
                                 setPlayers((prev) => {
                                   const updated = structuredClone(prev);
                                   const current = updated[pIdx].scores[index] || 0;
@@ -186,76 +300,85 @@ export default function AoSScoreTracker() {
                     })}
                   </div>
                 ))}
-                <div className="mt-4 inline-block font-semibold bg-white/40 backdrop-blur-sm p-2 rounded-lg">
-                  Total : {totalScore(player.scores)}
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-center font-semibold">
+                  <div className="bg-white/40 backdrop-blur-sm p-2 rounded-lg">
+                    🔹 Primaire : {player.scores.slice(0, 5).reduce((a, b) => a + b, 0)}
+                  </div>
+                  <div className="bg-white/40 backdrop-blur-sm p-2 rounded-lg">
+                    🔸 Secondaire : {player.scores.slice(5).reduce((a, b) => a + b, 0)}
+                  </div>
+                  <div className="bg-white/40 backdrop-blur-sm p-2 rounded-lg">
+                    Total : {totalScore(player.scores)}
+                  </div>
                 </div>
+
               </div>
             </CardContent>
           </Card>
         );
       })}
 
-      <div className="col-span-full flex flex-wrap justify-between items-center mt-4 gap-2">
-        <Button
-          disabled={currentTurn <= 1}
-          onClick={() => setCurrentTurn((t) => Math.max(1, t - 1))}
-        >
-          Tour précédent
-        </Button>
-        <span className="text-lg font-bold">
-          {isGameOver ? "Fin de la partie" : `Tour ${currentTurn}`}
-        </span>
-        <Button
-          disabled={currentTurn >= 5}
-          onClick={() => setCurrentTurn((t) => Math.min(5, t + 1))}
-        >
-          Tour suivant
-        </Button>
-        <Button
-          variant="destructive"
-          onClick={() => {
-            setPlayers([
-              { name: "", army: "", scores: Array(10).fill(0) },
-              { name: "", army: "", scores: Array(10).fill(0) },
-            ]);
-            setCurrentTurn(1);
-            localStorage.removeItem("aos-players");
-          }}
-        >
-          Réinitialiser
-        </Button>
-      </div>
+{/* Contrôle des tours + actions */}
+<div className="col-span-full flex flex-col items-center gap-6 mt-6">
+  <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+    
+    {/* Bouton précédent */}
+    <Button
+      className={`bg-black text-white text-xl font-semibold uppercase w-[230px] ${
+        currentTurn <= 1 ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+      onClick={() => setCurrentTurn((t) => Math.max(1, t - 1))}
+      disabled={currentTurn <= 1}
+    >
+      ⬅ TOUR PRÉCÉDENT
+    </Button>
 
-      {isGameOver && (
-        <div
-          className="col-span-full mt-6 p-4 border rounded-xl text-white relative overflow-hidden"
-          style={{ backgroundImage: "url('/images/summary.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
-        >
-          <div className="relative z-10">
-            <h3 className="text-xl font-bold mb-4">Résumé de la partie</h3>
-            <ul className="space-y-2">
-              {players.map((player, idx) => (
-                <li key={idx} className="flex justify-between">
-                  <span>
-                    {(player.name || `Joueur ${idx + 1}`).toUpperCase()} ({player.army || "Armée inconnue"})
-                  </span>
-                  <span className="font-semibold">{totalScore(player.scores)} points</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 font-bold">
-              Vainqueur : {(() => {
-                const [p1, p2] = players;
-                const t1 = totalScore(p1.scores);
-                const t2 = totalScore(p2.scores);
-                if (t1 === t2) return "ÉGALITÉ";
-                return t1 > t2 ? (p1.name || "Joueur 1").toUpperCase() : (p2.name || "Joueur 2").toUpperCase();
-              })()}
-            </div>
-          </div>
-          <div className="absolute inset-0 bg-black/30 z-0"></div>
-        </div>
-      )}
+    {/* Réinitialiser + Menu */}
+    <div className="flex flex-col sm:flex-row gap-4">
+      <Button
+        className="bg-black text-white text-xl font-semibold uppercase w-[230px]"
+        onClick={() => {
+          const confirmReset = window.confirm("Voulez-vous vraiment réinitialiser la partie ?");
+          if (!confirmReset) return;
+
+          setPlayers([
+            { name: "", army: "", scores: Array(10).fill(0) },
+            { name: "", army: "", scores: Array(10).fill(0) },
+          ]);
+          setCurrentTurn(1);
+          localStorage.removeItem("aos-players");
+        }}
+      >
+        RÉINITIALISER
+      </Button>
+
+      <Button
+        className="bg-black text-white text-xl font-semibold uppercase w-[230px]"
+        onClick={() => setView("home")}
+      >
+        MENU
+      </Button>
+    </div>
+
+    {/* Bouton suivant */}
+    <Button
+      className={`bg-black text-white text-xl font-semibold uppercase w-[230px] ${
+        currentTurn >= 5 ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+      onClick={() => setCurrentTurn((t) => Math.min(5, t + 1))}
+      disabled={currentTurn >= 5}
+    >
+      TOUR SUIVANT ➡
+    </Button>
+  </div>
+
+  {/* Tour actuel centré */}
+  <span className="text-lg font-bold text-white text-center">
+    {isGameOver ? "FIN DE LA PARTIE" : `TOUR ${currentTurn}`}
+  </span>
+</div>
+
+
     </main>
   );
 }
