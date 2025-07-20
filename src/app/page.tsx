@@ -68,7 +68,7 @@ export default function AoSScoreTracker() {
 
   const totalScore = (scores: number[]) => scores.reduce((a, b) => a + b, 0);
   const totalSecondary = (scores: number[]) => scores.slice(5).reduce((a, b) => a + b, 0);
-  const isGameOver = currentTurn === 5;
+  const isGameOver = currentTurn > 5;
 
   if (view === "home") {
     return (
@@ -365,10 +365,10 @@ export default function AoSScoreTracker() {
     {/* Bouton suivant */}
     <Button
       className={`bg-black text-white text-xl font-semibold uppercase w-[230px] ${
-        currentTurn >= 5 ? "opacity-50 cursor-not-allowed" : ""
+        currentTurn >= 6 ? "opacity-50 cursor-not-allowed" : ""
       }`}
-      onClick={() => setCurrentTurn((t) => Math.min(5, t + 1))}
-      disabled={currentTurn >= 5}
+      onClick={() => setCurrentTurn((t) => Math.min(t + 1, 6))}
+      disabled={currentTurn >= 6}
     >
       TOUR SUIVANT ➡
     </Button>

@@ -1,14 +1,14 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require("next-pwa")({
-  dest: "public",
+const withPWA = require('next-pwa')({
+  dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === "development", // pas de SW en dev
+  disable: process.env.NODE_ENV === 'development',
 });
 
 const nextConfig = {
   reactStrictMode: true,
-  output: "standalone",
+  output: 'export', // 🔧 Important pour générer un site statique
 };
 
-module.exports = withPWA(nextConfig); // ✅ C'est cette ligne qui doit être exportée
+module.exports = withPWA(nextConfig);

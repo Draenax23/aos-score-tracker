@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">aos-tracker</string>
+    <string name="title_activity_main">aos-tracker</string>
+    <string name="package_name">com.aos.tracker</string>
+    <string name="custom_url_scheme">com.aos.tracker</string>
+</resources>
