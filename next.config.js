@@ -9,6 +9,9 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  experimental: {
+    appDir: true, // ← indispensable pour les dossiers "app/"
+  },
 };
 
 module.exports = withPWA(nextConfig);
