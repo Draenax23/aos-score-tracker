@@ -97,7 +97,7 @@ export default function AoSScoreTracker() {
       <main className="min-h-screen flex flex-col justify-center items-center bg-gray-900 text-white p-4">
         <h1 className="text-3xl font-bold mb-6">Statistiques</h1>
         <p className="mb-6 text-lg text-center">Cette fonctionnalité sera disponible prochainement.</p>
-        <Button onClick={() => setView("home")} className="bg-white text-black hover:bg-gray-200">Retour à l'accueil</Button>
+        <Button onClick={() => setView("home")} className="bg-white text-black hover:bg-gray-200">MENU</Button>
       </main>
     );
   }
