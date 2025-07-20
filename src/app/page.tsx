@@ -44,6 +44,8 @@ const armyImages: Record<string, string> = {
   "Sylvaneth": "/images/sylvaneth.jpg"
 };
 
+const clean = (str: string) => str.replace(/'/g, "’");
+
 export default function AoSScoreTracker() {
   const [view, setView] = useState<"home" | "game" | "stats">("home");
   const [players, setPlayers] = useState(() => [
@@ -145,14 +147,14 @@ export default function AoSScoreTracker() {
                 if (t1 === t2) {
                   if (s1 === s2) return "ÉGALITÉ";
                   const winner = s1 > s2 ? (p1.name || "Joueur 1") : (p2.name || "Joueur 2");
-                  return `VICTOIRE MINEURE DE ${winner.toUpperCase()}`;
+                  return `VICTOIRE MINEURE DE ${clean(winner).toUpperCase()}`;
                 }
 
                 const diff = Math.abs(t1 - t2);
                 const winner = t1 > t2 ? (p1.name || "Joueur 1") : (p2.name || "Joueur 2");
 
-                if (diff >= 5) return `VICTOIRE MAJEURE DE ${winner.toUpperCase()}`;
-                return `VICTOIRE MINEURE DE ${winner.toUpperCase()}`;
+                if (diff >= 5) return `VICTOIRE MAJEURE DE ${clean(winner).toUpperCase()}`;
+                return `VICTOIRE MINEURE DE ${clean(winner).toUpperCase()}`;
               })()}
             </div>
 
